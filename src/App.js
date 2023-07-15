@@ -1,6 +1,7 @@
 import './App.css';
 import React, { Component } from 'react'
 import ModalCreate from './components/ModalCreate';
+import { wait } from '@testing-library/user-event/dist/utils';
 
 class App extends Component {
 
@@ -14,20 +15,36 @@ class App extends Component {
       pengeluaranUang: 0,
       transactionIn: 0,
       transactionOut: 0,
-      history: [
-        {
-          deskripsi: 'Menerima Gaji',
-          tanggal: '9 Juni 2023',
-          nominal: 3000000,
-          category: 'IN'
-        },
-        {
-          deskripsi: 'Makan Siang Nasi Babat di Terminal',
-          tanggal: '12 Juni 2023',
-          nominal: 18000,
-          category: 'OUT'
-        },
-      ],
+      history: [],
+    }
+  }
+
+  tambahItem = (item) => {  
+    let newData = [...this.state.history, item]
+    this.hitung(newData)
+  }
+
+  hitung = (histories) => {
+    let dataUangIn = histories.filter( item => item.category === 'IN' )
+    let totalUangIn = dataUangIn.reduce((total, item) => total + item.nominal, 0)
+    
+    let dataUangOut = histories.filter( item => item.category === 'OUT' )
+    let totalUangOut = dataUangOut.reduce((total, {nominal}) => total + nominal, 0) // using destructuring
+
+    this.setState({
+      transactionIn: dataUangIn.length,
+      transactionOut: dataUangOut.length,
+      pemasukanUang: totalUangIn,
+      pengeluaranUang: totalUangOut,
+      sisaUang: totalUangIn - totalUangOut,
+      persentaseUang: (totalUangIn-totalUangOut)/totalUangIn * 100,
+      history: histories
+    })
+  }
+
+  componentDidMount() {
+    if (this.state.history.length > 0) {      
+      this.hitung(this.state.history)
     }
   }
 
@@ -80,13 +97,16 @@ class App extends Component {
             <div className='col-12 d-flex justify-content-between align-items-center'>
               <h4 className='fw-bold'>Riwayat Transaksi</h4>
               <div className='wrapper-button d-flex'>
-                <ModalCreate category="IN" variant="button btn-ungu px-3 py-2 me-2" text="Pemasukan" icon="bi bi-plus-circle-fill" modalheading="Tambah Pemasukan" />
-                <ModalCreate category="OUT" variant="button btn-pink px-3 py-2" text="Pengeluaran" icon="bi bi-dash-circle-fill" modalheading="Tambah Pengeluaran" />                
+                <ModalCreate action={this.tambahItem} category="IN" variant="button btn-ungu px-3 py-2 me-2" text="Pemasukan" icon="bi bi-plus-circle-fill" modalheading="Tambah Pemasukan" />
+                <ModalCreate action={this.tambahItem} category="OUT" variant="button btn-pink px-3 py-2" text="Pengeluaran" icon="bi bi-dash-circle-fill" modalheading="Tambah Pengeluaran" />                
               </div>
             </div>
           </div>
           {/* end history */}
           
+          {/* alert jika belum ada history */}
+          {this.state.history.length < 1 && <h1>belum ada transaksi</h1>}
+
           {/* item history */}
           {this.state.history.map((item, index) => (
             <div key={index} className='row mb-2'>

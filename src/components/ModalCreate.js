@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Button, Modal } from 'react-bootstrap'
+import { Modal } from 'react-bootstrap'
 
 class ModalCreate extends Component {
 
@@ -25,7 +25,6 @@ class ModalCreate extends Component {
 
     handleChange = (e) => {
         this.setState({ [e.target.name]: e.target.value })
-        console.log(this.state)
     }
 
     handleSubmit = () => {
@@ -33,6 +32,15 @@ class ModalCreate extends Component {
     }
 
     tambahItem = () => {
+        let data = {            
+            deskripsi: this.state.deskripsi,
+            nominal: parseFloat(this.state.nominal),
+            tanggal: this.state.tanggal,
+            category: this.state.category,
+        }
+
+        const fnTambahItem = this.props.action // fungsi dari app.js
+        fnTambahItem(data)
         this.setState({ show: false })
     }
 
